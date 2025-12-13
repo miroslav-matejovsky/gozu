@@ -21,10 +21,10 @@ func ZipToFile(srcPath, dstPath string, filter FilterFunc) error {
 	if err != nil {
 		return fmt.Errorf("create zip file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	zipWriter := zip.NewWriter(file)
-	defer zipWriter.Close()
+	defer func() { _ = zipWriter.Close() }()
 
 	err = filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -52,7 +52,7 @@ func ZipToFile(srcPath, dstPath string, filter FilterFunc) error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		w, err := zipWriter.Create(relPath)
 		if err != nil {
 			return err
@@ -70,7 +70,7 @@ func ZipToFile(srcPath, dstPath string, filter FilterFunc) error {
 func ZipToBytes(srcPath string, filter FilterFunc) ([]byte, error) {
 	var buf bytes.Buffer
 	zipWriter := zip.NewWriter(&buf)
-	defer zipWriter.Close()
+	defer func() { _ = zipWriter.Close() }()
 
 	err := filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -98,7 +98,7 @@ func ZipToBytes(srcPath string, filter FilterFunc) ([]byte, error) {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		w, err := zipWriter.Create(relPath)
 		if err != nil {
 			return err
@@ -109,6 +109,9 @@ func ZipToBytes(srcPath string, filter FilterFunc) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("walk directory: %w", err)
 	}
-	zipWriter.Close()
+	err = zipWriter.Close()
+	if err != nil {
+		return nil, fmt.Errorf("close zip writer: %w", err)
+	}
 	return buf.Bytes(), nil
 }

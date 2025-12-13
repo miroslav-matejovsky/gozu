@@ -20,7 +20,7 @@ func UnzipFromFile(srcFile, dstPath string, filter FilterFunc) error {
 	if err != nil {
 		return fmt.Errorf("open zip reader: %w", err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	for _, f := range r.File {
 		if !filter(f.Name, f.FileInfo()) {
@@ -42,12 +42,12 @@ func UnzipFromFile(srcFile, dstPath string, filter FilterFunc) error {
 		if err != nil {
 			return fmt.Errorf("create file %s: %w", path, err)
 		}
-		defer out.Close()
+		defer func() { _ = out.Close() }()
 		rc, err := f.Open()
 		if err != nil {
 			return fmt.Errorf("open zip file %s: %w", f.Name, err)
 		}
-		defer rc.Close()
+		defer func() { _ = rc.Close() }()
 		_, err = io.Copy(out, rc)
 		if err != nil {
 			return fmt.Errorf("copy file %s: %w", f.Name, err)
@@ -83,12 +83,12 @@ func UnzipFromBytes(data []byte, dstPath string, filter FilterFunc) error {
 		if err != nil {
 			return fmt.Errorf("create file %s: %w", path, err)
 		}
-		defer out.Close()
+		defer func() { _ = out.Close() }()
 		rc, err := f.Open()
 		if err != nil {
 			return fmt.Errorf("open zip file %s: %w", f.Name, err)
 		}
-		defer rc.Close()
+		defer func() { _ = rc.Close() }()
 		_, err = io.Copy(out, rc)
 		if err != nil {
 			return fmt.Errorf("copy file %s: %w", f.Name, err)
