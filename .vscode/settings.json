@@ -1,0 +1,15 @@
+{
+ "gopls": {
+  "standaloneTags": [
+   "ignore",
+   "mage"
+  ]
+ },
+ "cSpell.words": [
+  "gofmt",
+  "golangci",
+  "gotestsum",
+  "magefile",
+  "testdox"
+ ]
+}
