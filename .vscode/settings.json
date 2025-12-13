@@ -10,6 +10,9 @@
   "golangci",
   "gotestsum",
   "magefile",
+  "matejovsky",
+  "miroslav",
+  "stretchr",
   "testdox"
  ]
 }
