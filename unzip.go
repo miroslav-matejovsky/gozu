@@ -22,38 +22,7 @@ func UnzipFromFile(srcFile, dstPath string, filter FilterFunc) error {
 	}
 	defer func() { _ = r.Close() }()
 
-	for _, f := range r.File {
-		if !filter(f.Name, f.FileInfo()) {
-			continue
-		}
-		path := filepath.Join(dstPath, f.Name)
-		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(path, f.Mode())
-			if err != nil {
-				return fmt.Errorf("create directory %s: %w", path, err)
-			}
-			continue
-		}
-		err = os.MkdirAll(filepath.Dir(path), 0755)
-		if err != nil {
-			return fmt.Errorf("create directory %s: %w", filepath.Dir(path), err)
-		}
-		out, err := os.Create(path)
-		if err != nil {
-			return fmt.Errorf("create file %s: %w", path, err)
-		}
-		defer func() { _ = out.Close() }()
-		rc, err := f.Open()
-		if err != nil {
-			return fmt.Errorf("open zip file %s: %w", f.Name, err)
-		}
-		defer func() { _ = rc.Close() }()
-		_, err = io.Copy(out, rc)
-		if err != nil {
-			return fmt.Errorf("copy file %s: %w", f.Name, err)
-		}
-	}
-	return nil
+	return unzipFromFiles(dstPath, filter, r.File)
 }
 
 // UnzipFromBytes unzips the zip data in the byte slice to the directory at dstPath, filtering files with the provided filter.
@@ -63,19 +32,24 @@ func UnzipFromBytes(data []byte, dstPath string, filter FilterFunc) error {
 		return fmt.Errorf("create zip reader: %w", err)
 	}
 
-	for _, f := range r.File {
+	return unzipFromFiles(dstPath, filter, r.File)
+}
+
+// unzipFromFiles unzips the provided zip files to the directory at dstPath, filtering files with the provided filter.
+func unzipFromFiles(dstPath string, filter FilterFunc, files []*zip.File) error {
+	for _, f := range files {
 		if !filter(f.Name, f.FileInfo()) {
 			continue
 		}
 		path := filepath.Join(dstPath, f.Name)
 		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(path, f.Mode())
+			err := os.MkdirAll(path, f.Mode())
 			if err != nil {
 				return fmt.Errorf("create directory %s: %w", path, err)
 			}
 			continue
 		}
-		err = os.MkdirAll(filepath.Dir(path), 0755)
+		err := os.MkdirAll(filepath.Dir(path), 0755)
 		if err != nil {
 			return fmt.Errorf("create directory %s: %w", filepath.Dir(path), err)
 		}
@@ -83,13 +57,14 @@ func UnzipFromBytes(data []byte, dstPath string, filter FilterFunc) error {
 		if err != nil {
 			return fmt.Errorf("create file %s: %w", path, err)
 		}
-		defer func() { _ = out.Close() }()
 		rc, err := f.Open()
 		if err != nil {
+			_ = out.Close()
 			return fmt.Errorf("open zip file %s: %w", f.Name, err)
 		}
-		defer func() { _ = rc.Close() }()
 		_, err = io.Copy(out, rc)
+		_ = rc.Close()
+		_ = out.Close()
 		if err != nil {
 			return fmt.Errorf("copy file %s: %w", f.Name, err)
 		}
