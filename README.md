@@ -1,3 +1,3 @@
 # gzu
 
-gzu - go zip utils library
+gzu - go zip utils
