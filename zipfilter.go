@@ -35,38 +35,71 @@ func CombineFilters(filters ...FilterFunc) FilterFunc {
 	}
 }
 
+// pathOnlyFilter represents functions that filter based only on the file path.
+// These functions take a string (the relative path) and return a bool indicating
+// whether to include the file.
 type pathOnlyFilter interface {
 	~func(string) bool
 }
 
+// infoOnlyFilter represents functions that filter based only on the file info.
+// These functions take an fs.FileInfo and return a bool indicating
+// whether to include the file.
 type infoOnlyFilter interface {
 	~func(fs.FileInfo) bool
 }
 
+// filterFuncConstraint represents the full FilterFunc signature.
+// This is used to allow passing the exact FilterFunc type.
 type filterFuncConstraint interface {
 	~func(string, fs.FileInfo) bool
 }
 
+// filterConstructor is a union type that allows functions with different signatures
+// to be passed to NewFilterFunc. It includes path-only, info-only, and full FilterFunc signatures.
 type filterConstructor interface {
 	pathOnlyFilter | infoOnlyFilter | filterFuncConstraint
 }
 
 // NewFilterFunc builds a FilterFunc from a path-only, info-only, or full predicate.
+// This generic constructor allows creating FilterFunc instances from simpler function types,
+// making it easier to define filters without always needing to handle both path and info.
+//
+// Parameters:
+//   - fn: A function that matches one of the supported signatures.
+//
+// Returns:
+//   - A FilterFunc that adapts the input function to the full signature.
+//
+// Examples:
+//   - Path-only: NewFilterFunc(func(path string) bool { return strings.HasSuffix(path, ".go") })
+//   - Info-only: NewFilterFunc(func(info fs.FileInfo) bool { return info.Size() > 0 })
+//   - Full: NewFilterFunc(func(path string, info fs.FileInfo) bool { return true })
+//
+// The function uses type switching to determine the input function's signature and wraps it accordingly.
+// For path-only functions, the info parameter is ignored.
+// For info-only functions, the path parameter is ignored.
+// For full functions, it's returned as-is.
 func NewFilterFunc[Fn filterConstructor](fn Fn) FilterFunc {
 	switch wrapped := any(fn).(type) {
 	case FilterFunc:
+		// If it's already a FilterFunc, return it directly.
 		return wrapped
 	case func(string, fs.FileInfo) bool:
+		// If it's the full signature, cast to FilterFunc.
 		return FilterFunc(wrapped)
 	case func(string) bool:
+		// For path-only functions, create a wrapper that ignores the info.
 		return func(path string, _ fs.FileInfo) bool {
 			return wrapped(path)
 		}
 	case func(fs.FileInfo) bool:
+		// For info-only functions, create a wrapper that ignores the path.
 		return func(_ string, info fs.FileInfo) bool {
 			return wrapped(info)
 		}
 	default:
+		// This should not happen due to the generic constraint, but panic for safety.
 		panic("unsupported filter constructor")
 	}
 }
