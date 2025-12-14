@@ -34,3 +34,39 @@ func CombineFilters(filters ...FilterFunc) FilterFunc {
 		return true
 	}
 }
+
+type pathOnlyFilter interface {
+	~func(string) bool
+}
+
+type infoOnlyFilter interface {
+	~func(fs.FileInfo) bool
+}
+
+type filterFuncConstraint interface {
+	~func(string, fs.FileInfo) bool
+}
+
+type filterConstructor interface {
+	pathOnlyFilter | infoOnlyFilter | filterFuncConstraint
+}
+
+// NewFilterFunc builds a FilterFunc from a path-only, info-only, or full predicate.
+func NewFilterFunc[Fn filterConstructor](fn Fn) FilterFunc {
+	switch wrapped := any(fn).(type) {
+	case FilterFunc:
+		return wrapped
+	case func(string, fs.FileInfo) bool:
+		return FilterFunc(wrapped)
+	case func(string) bool:
+		return func(path string, _ fs.FileInfo) bool {
+			return wrapped(path)
+		}
+	case func(fs.FileInfo) bool:
+		return func(_ string, info fs.FileInfo) bool {
+			return wrapped(info)
+		}
+	default:
+		panic("unsupported filter constructor")
+	}
+}

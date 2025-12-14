@@ -34,3 +34,17 @@ err = gozu.UnzipFromBytes(data, "path/to/extract", gozu.AllowAll)
 
 - `AllowAll`: Includes all files
 - `CombineFilters`: Combine multiple filters
+
+### Constructing filters
+
+`NewFilterFunc` accepts either a full `FilterFunc`, a path-only predicate, or an info-only predicate and adapts it to the `FilterFunc` signature:
+
+```go
+pathOnly := gozu.NewFilterFunc(func(path string) bool {
+    return strings.HasPrefix(path, "docs/")
+})
+
+infoOnly := gozu.NewFilterFunc(func(info fs.FileInfo) bool {
+    return info.Size() > 0
+})
+```
