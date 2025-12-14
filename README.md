@@ -1,17 +1,17 @@
-# gzu
+# gozu
 
-gzu - go zip utils
+gozu - go zip utils
 
 ## Usage
 
 ```go
-import "github.com/miroslav-matejovsky/gzu"
+import "github.com/miroslav-matejovsky/gozu"
 
 // Zip a directory
-err := gzu.Zip("path/to/dir", "output.zip")
+err := gozu.Zip("path/to/dir", "output.zip")
 
 // Unzip a zip file
-err = gzu.Unzip("input.zip", "path/to/extract")
+err = gozu.Unzip("input.zip", "path/to/extract")
 ```
 
 ## Advanced Usage
@@ -23,11 +23,11 @@ Use filters to selectively include files:
 filter := func(path string, info fs.FileInfo) bool {
     return filepath.Ext(path) == ".txt"
 }
-err := gzu.ZipToFile("path/to/dir", "output.zip", filter)
+err := gozu.ZipToFile("path/to/dir", "output.zip", filter)
 
 // Unzip from bytes
-data, err := gzu.ZipToBytes("path/to/dir", gzu.AllowAll)
-err = gzu.UnzipFromBytes(data, "path/to/extract", gzu.AllowAll)
+data, err := gozu.ZipToBytes("path/to/dir", gozu.AllowAll)
+err = gozu.UnzipFromBytes(data, "path/to/extract", gozu.AllowAll)
 ```
 
 ## Filters

@@ -1,4 +1,4 @@
-package gzu
+package gozu
 
 import (
 	"io/fs"

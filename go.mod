@@ -1,4 +1,4 @@
-module github.com/miroslav-matejovsky/gzu
+module github.com/miroslav-matejovsky/gozu
 
 go 1.25.5
 

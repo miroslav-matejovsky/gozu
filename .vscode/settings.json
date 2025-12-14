@@ -9,6 +9,7 @@
   "gofmt",
   "golangci",
   "gotestsum",
+  "gozu",
   "magefile",
   "matejovsky",
   "miroslav",
