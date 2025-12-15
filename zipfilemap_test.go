@@ -23,10 +23,10 @@ func TestValidateFileMap(t *testing.T) {
 		{name: "windows absolute", fm: FileMap{"C:/abs/path.txt": []byte("x")}, wantErr: "absolute paths are not allowed"},
 		{name: "up-level reference", fm: FileMap{"dir/../evil.txt": []byte("x")}, wantErr: "invalid file path (contains up-level references or redundant separators)"},
 		{name: "redundant separators", fm: FileMap{"dir//file.txt": []byte("x")}, wantErr: "invalid file path (contains up-level references or redundant separators)"},
+		{name: "simple up-level reference", fm: FileMap{"../some.txt": []byte("x")}, wantErr: "invalid file path"},
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.fm.Validate()
 			if tc.wantErr == "" {

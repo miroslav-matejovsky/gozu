@@ -16,6 +16,9 @@ func (fm FileMap) ExportToDir(destDir string) error {
 	if destDir == "" {
 		return fmt.Errorf("destination directory cannot be empty")
 	}
+	if len(fm) == 0 {
+		return fmt.Errorf("file map is empty")
+	}
 	if err := fm.Validate(); err != nil {
 		return fmt.Errorf("invalid file map: %w", err)
 	}

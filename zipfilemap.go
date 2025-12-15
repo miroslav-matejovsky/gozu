@@ -27,6 +27,9 @@ func (fm FileMap) Validate() error {
 		if isAbsoluteArchivePath(cleanPath, filePath) {
 			return fmt.Errorf("absolute paths are not allowed: %q", filePath)
 		}
+		if strings.Contains(cleanPath, "..") {
+			return fmt.Errorf("invalid file path: %q", filePath)
+		}
 		if cleanPath != slashPath {
 			return fmt.Errorf("invalid file path (contains up-level references or redundant separators): %q", filePath)
 		}
