@@ -150,20 +150,59 @@ func TestZipMapToBytes_NestedDirectories(t *testing.T) {
 	require.Equal(t, []byte("shallow content"), extracted["a/shallow.txt"])
 }
 
-func TestZipMapToBytes_SkipsEmptyPaths(t *testing.T) {
-	files := FileMap{
-		"":         []byte("should be skipped"),
-		".":        []byte("should also be skipped"),
-		"file.txt": []byte("content"),
+func TestZipMapToBytes_InvalidPaths(t *testing.T) {
+	tests := []struct {
+		name        string
+		files       FileMap
+		errContains string
+	}{
+		{
+			name: "empty path",
+			files: FileMap{
+				"":         []byte("nope"),
+				"file.txt": []byte("ok"),
+			},
+			errContains: "invalid file map: invalid file path",
+		},
+		{
+			name: "dot path",
+			files: FileMap{
+				".":        []byte("nope"),
+				"file.txt": []byte("ok"),
+			},
+			errContains: "invalid file map: invalid file path",
+		},
+		{
+			name: "up-level reference",
+			files: FileMap{
+				"dir/../evil.txt": []byte("nope"),
+			},
+			errContains: "invalid file map: invalid file path",
+		},
+		{
+			name: "absolute unix path",
+			files: FileMap{
+				"/abs/path.txt": []byte("nope"),
+			},
+			errContains: "invalid file map: absolute paths are not allowed",
+		},
+		{
+			name: "absolute windows path",
+			files: FileMap{
+				"C:/abs/path.txt": []byte("nope"),
+			},
+			errContains: "invalid file map: absolute paths are not allowed",
+		},
 	}
 
-	data, err := ZipMapToBytes(files)
-	require.NoError(t, err)
-
-	extracted, err := UnzipBytesToMap(data)
-	require.NoError(t, err)
-	require.Len(t, extracted, 1)
-	require.Equal(t, []byte("content"), extracted["file.txt"])
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := ZipMapToBytes(tc.files)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.errContains)
+		})
+	}
 }
 
 func TestUnzipBytesToMap(t *testing.T) {

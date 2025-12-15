@@ -11,19 +11,23 @@ import (
 // ZipMapToBytes creates an in-memory zip archive from the provided map of file paths to their byte contents.
 // File paths in the map should use forward slashes (e.g., "dir/file.txt").
 // Returns the zip archive as a byte slice or an error if the operation fails.
-func ZipMapToBytes(files FileMap) ([]byte, error) {
-	if files == nil {
+func ZipMapToBytes(fileMap FileMap) ([]byte, error) {
+	if fileMap == nil {
 		return nil, fmt.Errorf("files map cannot be nil")
+	}
+
+	if err := fileMap.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid file map: %w", err)
 	}
 
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
 
-	for filePath, content := range files {
+	for filePath, content := range fileMap {
 		// Clean the path and ensure forward slashes
 		cleanPath := path.Clean(filePath)
 		if cleanPath == "." || cleanPath == "" {
-			continue
+			return nil, fmt.Errorf("invalid file path: %q", filePath)
 		}
 
 		w, err := zw.Create(cleanPath)
