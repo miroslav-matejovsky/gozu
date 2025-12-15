@@ -12,9 +12,8 @@ import (
 // This type is useful for in-memory zip operations without filesystem access.
 type FileMap map[string][]byte
 
-// ValidateFileMap checks if the provided FileMap is valid.
-// It ensures that no file paths are empty or represent the current directory.
-// Also only relative paths without up-level references are allowed.
+// Validate ensures the FileMap only contains safe, relative paths and non-nil data.
+// Paths must not be empty, reference the current directory, be absolute, or include up-level segments.
 func (fm FileMap) Validate() error {
 	if fm == nil {
 		return fmt.Errorf("file map cannot be nil")
