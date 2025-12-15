@@ -8,38 +8,6 @@ import (
 	"path"
 )
 
-// Get returns the contents of the file at the given path and a boolean indicating
-// whether the file exists in the map.
-func (fm FileMap) Get(filePath string) ([]byte, bool) {
-	data, ok := fm[filePath]
-	return data, ok
-}
-
-// Set adds or updates a file in the map with the given path and contents.
-func (fm FileMap) Set(filePath string, data []byte) {
-	fm[filePath] = data
-}
-
-// Delete removes a file from the map.
-func (fm FileMap) Delete(filePath string) {
-	delete(fm, filePath)
-}
-
-// Has returns true if the file exists in the map.
-func (fm FileMap) Has(filePath string) bool {
-	_, ok := fm[filePath]
-	return ok
-}
-
-// Paths returns all file paths in the map.
-func (fm FileMap) Paths() []string {
-	paths := make([]string, 0, len(fm))
-	for p := range fm {
-		paths = append(paths, p)
-	}
-	return paths
-}
-
 // ZipMapToBytes creates an in-memory zip archive from the provided map of file paths to their byte contents.
 // File paths in the map should use forward slashes (e.g., "dir/file.txt").
 // Returns the zip archive as a byte slice or an error if the operation fails.
