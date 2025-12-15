@@ -1,6 +1,3 @@
-// Package gozu provides utilities for creating and extracting zip archives.
-// It supports filtering files during compression and extraction, allowing
-// selective inclusion based on custom criteria.
 package gozu
 
 import (
